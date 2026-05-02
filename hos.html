@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mai Mangeshkar Hospital Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        
+        /* Tab Styling */
+        .tabs { display: flex; cursor: pointer; background: #eee; border-radius: 5px 5px 0 0; overflow: hidden; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-weight: bold; transition: 0.3s; }
+        .tab:hover { background: #ddd; }
+        .tab.active { background: #3498db; color: white; }
+
+        .tab-content { display: none; padding: 20px; border: 1px solid #eee; border-top: none; }
+        .tab-content.active { display: block; }
+
+        /* Form Styling */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background: #219150; }
+
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mai Mangeshkar Hospital</h2>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="openTab(event, 'book')">Book Appointment</div>
+        <div class="tab" onclick="openTab(event, 'records')">View Records</div>
+    </div>
+
+    <!-- Tab 1: Booking Form -->
+    <div id="book" class="tab-content active">
+        <div class="input-group">
+            <label>Patient Name</label>
+            <input type="text" id="name" placeholder="Enter full name">
+        </div>
+        <div class="input-group">
+            <label>Mobile Number</label>
+            <input type="text" id="mobile" placeholder="Enter 10-digit number">
+        </div>
+        <div class="input-group">
+            <label>Select Disease</label>
+            <select id="disease" onchange="updateDoctors()">
+                <option value="">--Select--</option>
+                <option value="Heart">Heart Disease</option>
+                <option value="Kidney">Kidney Disease</option>
+            </select>
+        </div>
+        <div id="doctorSelection" style="display:none">
+            <div class="input-group">
+                <label id="docLabel"></label>
+                <select id="day"></select>
+            </div>
+            <div class="input-group">
+                <label>Choose Time</label>
+                <select id="time">
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                </select>
+            </div>
+            <button onclick="saveAppointment()">Book & Save Appointment</button>
+        </div>
+    </div>
+
+    <!-- Tab 2: View Records -->
+    <div id="records" class="tab-content">
+        <h3>Saved Appointments</h3>
+        <table id="recordTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Specialist</th>
+                    <th>Day/Time</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Logic for Switching Tabs
+    function openTab(evt, tabName) {
+        let contents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+        
+        let tabs = document.getElementsByClassName("tab");
+        for (let i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+
+        if(tabName === 'records') loadRecords();
+    }
+
+    // Logic for Doctor availability (replaces your C++ if-else)
+    function updateDoctors() {
+        const disease = document.getElementById("disease").value;
+        const docDiv = document.getElementById("doctorSelection");
+        const docLabel = document.getElementById("docLabel");
+        const daySelect = document.getElementById("day");
+        
+        docDiv.style.display = disease ? "block" : "none";
+        daySelect.innerHTML = ""; // Clear old options
+
+        if (disease === "Heart") {
+            docLabel.innerText = "Specialist: DR. Anil (Available: Mon, Wed, Fri)";
+            ["Monday", "Wednesday", "Friday"].forEach(d => {
+                let opt = new Option(d, d); daySelect.add(opt);
+            });
+        } else if (disease === "Kidney") {
+            docLabel.innerText = "Specialist: DR. Ajay (Available: Tue, Thu, Sat)";
+            ["Tuesday", "Thursday", "Saturday"].forEach(d => {
+                let opt = new Option(d, d); daySelect.add(opt);
+            });
+        }
+    }
+
+    // Logic for Saving (replaces savetofile)
+    function saveAppointment() {
+        const appointment = {
+            name: document.getElementById("name").value,
+            mobile: document.getElementById("mobile").value,
+            disease: document.getElementById("disease").value,
+            doc: document.getElementById("disease").value === "Heart" ? "DR. Anil" : "DR. Ajay",
+            day: document.getElementById("day").value,
+            time: document.getElementById("time").value
+        };
+
+        if(!appointment.name || !appointment.mobile) {
+            alert("Please fill all details");
+            return;
+        }
+
+        // Simulating file storage using LocalStorage (stays in browser)
+        let records = JSON.parse(localStorage.getItem("hospital_records") || "[]");
+        records.push(appointment);
+        localStorage.setItem("hospital_records", JSON.stringify(records));
+
+        alert("Appointment Saved Successfully!");
+        location.reload(); // Refresh to clear form
+    }
+
+    // Logic for Loading Records
+    function loadRecords() {
+        const tbody = document.querySelector("#recordTable tbody");
+        const records = JSON.parse(localStorage.getItem("hospital_records") || "[]");
+        tbody.innerHTML = "";
+        
+        records.forEach(r => {
+            let row = `<tr>
+                <td>${r.name}</td>
+                <td>${r.mobile}</td>
+                <td>${r.doc} (${r.disease})</td>
+                <td>${r.day} @ ${r.time}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+</script>
+
+</body>
+</html>
